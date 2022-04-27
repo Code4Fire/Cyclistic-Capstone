@@ -1,0 +1,54 @@
+# SQL Query used to compile all datasets into 1 file - over 2M lines
+SELECT * FROM 'optimum-time-320616-Q1_2021_BikeData'
+UNION ALL
+SELECT * FROM 'optimum-time-320616-Q2_2020_BikeData'
+UNION ALL
+SELECT * FROM 'optimum-time-320616-Q3_2020_BikeData'
+UNION ALL
+SELECT * FROM 'optimum-time-320616-Q4_2020_BikeData'
+***
+
+
+# Trip Duration by Usertype
+SELECT  
+    SUM(ride_length) AS hours_used,
+    EXTRACT(HOUR FROM TIME(start_time)) AS hour,
+    COUNT(member_casual) AS trip_count
+FROM `optimum-time-320616.Cyclistic_Trip_Data.day_time period by rider type` 
+WHERE 
+    member_casual= 'member'
+GROUP BY
+    hour
+ORDER BY
+    hour
+***
+
+
+#Rider Usage by Week / Usage by Time Period / Rider Usage by Month
+SELECT 
+    day_of_week,
+    member_casual,
+    CAST(started_at as time)AS start_time,case when 
+				CAST(started_at as time) between '5:00:00.001' and '12:00:00.000' then 'Morning' 
+				when CAST(started_at as time) between '12:00:00.001' and '17:00:00.000' then 'Afternoon' 
+				when CAST(started_at as time) between '17:00:00.001' and '22:00:00.000' then 'Evening' 
+				else 'Night'
+                end AS time_period, 
+    ride_length
+FROM `optimum-time-320616.Cyclistic_Trip_Data.2020_2021_BikeData`
+ORDER BY 
+    day_of_week
+***
+
+
+#Cyclistic- Top 10 End Stations
+SELECT 
+    end_station_name,
+    COUNT(member_casual) AS user_pickup_count,
+FROM `optimum-time-320616.Cyclistic_Trip_Data.2020_2021_BikeData`
+WHERE
+    member_casual = "member"
+GROUP BY 
+    end_station_name
+ORDER BY 
+    COUNT(start_station_name) DESC
